@@ -54,10 +54,19 @@ class UrlRepository:
             print(f"Error deleting URL: {e}")
             return False
 
+    def delete_by_original_url(self, original_url: str) -> Url:
+        try:
+            result = self.collection.delete_one({"original_url": original_url})
+            return result.deleted_count > 0
+        except PyMongoError as e:
+            print(f"Error deleting URL: {e}")
+            return False
+
     def delete_expired_url(self) -> int:
         try:
             expired_date = datetime.now()
             result = self.collection.delete_many({"expires_at": {"$lt": expired_date}})
+            return result.deleted_count
         except PyMongoError as e:
             print(f"Error deleting URL: {e}")
             return 0
