@@ -43,3 +43,27 @@ class TestUrlService:
         assert delete is True
         after_delete = self.service.get_shortened_url(shortened_code)
         assert after_delete is None
+
+    def test_clean_and_delete_expired_url(self):
+        expired_url = Url(
+            original_url="http://example.com",
+            shortened_url="123rew",
+            created_at=datetime.now() - timedelta(days=10),
+            expires_at=datetime.now() - timedelta(days=5),
+            url_id=None
+        )
+        valid_url = Url(
+            original_url="http://example.com",
+            shortened_url="123rew",
+            created_at=datetime.now(),
+            expires_at=datetime.now() + timedelta(days=5),
+            url_id=None
+        )
+        expired = self.url_repository.save(expired_url)
+        valid = self.url_repository.save(valid_url)
+
+        deleted = self.service.clean_expired_url()
+        assert deleted == 1
+
+
+
