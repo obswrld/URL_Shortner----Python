@@ -10,13 +10,10 @@ class UrlRepository:
 
     def save(self, url: Url):
         try:
-            url_date = {
-                "shortened_url": url.shortened_url,
-                "original_url": url.original_url,
-                "created_at": url.created_at,
-                "expires_at": url.expires_at,
-            }
-            result = self.collection.insert_one(url_date)
+            data = url.to_dict()
+            print("Saving to MongoDB:", data)
+            result = self.collection.insert_one(data)
+            print("Inserted ID:", result.inserted_id)
             return str(result.inserted_id)
         except PyMongoError as e:
             print(f"Error saving URL: {e}")
@@ -24,9 +21,16 @@ class UrlRepository:
 
     def find_by_shortened_url(self, shortened_url: str) -> Url:
         try:
+            print("Finding Url by shortened url:", shortened_url)
             url_date = self.collection.find_one({"shortened_url": shortened_url})
+            print("found: ", url_date)
             if url_date:
-                return Url(shortened_url=url_date["shortened_url"], original_url=url_date["original_url"], created_at=url_date["created_at"],)
+                return Url(shortened_url=url_date["shortened_url"],
+                           original_url=url_date["original_url"],
+                           created_at=url_date["created_at"],
+                           expires_at=url_date["expires_at"],
+                           url_id=url_date["_id"]
+                )
             return None
         except PyMongoError as e:
             print(f"Error finding URL: {e}")
